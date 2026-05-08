@@ -482,11 +482,23 @@ Own<ram::Statement> UnitTranslator::generateStratumPreamble(const ast::RelationS
         appendStmt(preamble, generateNonRecursiveDelete(*rel));
     }
 
-    // Generate code for priming relation
+    // Generate code for priming relation.
+    // Default: δ := main (everything in main is "new" from this SCC's perspective).
+    // Outer-saturate fork: δ := main ∖ snap, where snap is what main looked like
+    // when this SCC last exited. On first entry, snap is empty so δ = main (same
+    // as default). On re-entry, only tuples added since the last visit show up in
+    // δ — preserving semi-naive across outer-iteration boundaries.
+    const bool outerSaturate = context->getOuterSaturateLimit() > 0;
     for (const ast::Relation* rel : scc) {
         std::string deltaRelation = getDeltaRelationName(rel->getQualifiedName());
         std::string mainRelation = getConcreteRelationName(rel->getQualifiedName());
-        appendStmt(preamble, generateMergeRelations(rel, deltaRelation, mainRelation));
+        if (outerSaturate) {
+            std::string snapRelation = getSnapRelationName(rel->getQualifiedName());
+            appendStmt(preamble, generateMergeRelationsWithFilter(
+                                         rel, deltaRelation, mainRelation, snapRelation));
+        } else {
+            appendStmt(preamble, generateMergeRelations(rel, deltaRelation, mainRelation));
+        }
     }
 
     for (const ast::Relation* rel : scc) {
@@ -788,6 +800,21 @@ Own<ram::Statement> UnitTranslator::generateRecursiveStratum(
     appendStmt(result, mk<ram::Assign>(mk<ram::Variable>(loop_counter), mk<ram::UnsignedConstant>(1), true));
     appendStmt(result, std::move(fixpointLoop));
 
+    // Outer-saturate fork: refresh the snapshot for each main relation.
+    // After this SCC converges, snap_R captures the current contents of R so
+    // that on re-entry we can compute δ := R ∖ snap_R = "tuples added externally".
+    if (context->getOuterSaturateLimit() > 0) {
+        for (const ast::Relation* rel : scc) {
+            std::string mainRelation = getConcreteRelationName(rel->getQualifiedName());
+            std::string snapRelation = getSnapRelationName(rel->getQualifiedName());
+            // snap := main. We clear-then-merge to ensure snap is exactly main
+            // (in case a previous iteration left tuples that have since been
+            // subsumed away from main).
+            appendStmt(result, mk<ram::Clear>(snapRelation));
+            appendStmt(result, generateMergeRelations(rel, snapRelation, mainRelation));
+        }
+    }
+
     // Add in the postamble
     appendStmt(result, generateStratumPostamble(scc));
     return mk<ram::Sequence>(std::move(result));
@@ -896,6 +923,13 @@ VecOwn<ram::Relation> UnitTranslator::createRamRelations(const std::vector<std::
                 // Add delta relation
                 std::string deltaName = getDeltaRelationName(rel->getQualifiedName());
                 ramRelations.push_back(createRamRelation(rel, deltaName));
+
+                // Outer-saturate fork: snapshot relation, used to compute
+                // cross-outer-iteration deltas. Same shape as the main relation.
+                if (context->getOuterSaturateLimit() > 0) {
+                    std::string snapName = getSnapRelationName(rel->getQualifiedName());
+                    ramRelations.push_back(createRamRelation(rel, snapName));
+                }
 
                 // Add auxiliary relation for subsumption
                 if (context->hasSubsumptiveClause(rel->getQualifiedName())) {

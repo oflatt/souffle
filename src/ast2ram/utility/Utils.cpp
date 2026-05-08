@@ -116,6 +116,10 @@ std::string getDeleteRelationName(const ast::QualifiedName& name) {
     return getConcreteRelationName(name, "@delete_");
 }
 
+std::string getSnapRelationName(const ast::QualifiedName& name) {
+    return getConcreteRelationName(name, "@snap_");
+}
+
 const std::string& getRelationName(const ast::QualifiedName& name) {
     return name.toString();
 }

@@ -63,6 +63,10 @@ std::string getRejectRelationName(const ast::QualifiedName& name);
 /** Get the corresponding RAM 'delete' relation name for the relation */
 std::string getDeleteRelationName(const ast::QualifiedName& name);
 
+/** Get the corresponding RAM 'snap' relation name for the relation.
+ * Used by the outer-saturate fork to snapshot a relation between visits. */
+std::string getSnapRelationName(const ast::QualifiedName& name);
+
 /** Get base relation name, strip off any possible prefix */
 std::string getBaseRelationName(const ast::QualifiedName& name);
 
