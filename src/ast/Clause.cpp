@@ -96,11 +96,12 @@ void Clause::printForDebugInfo(std::ostream& os) const {
 bool Clause::equal(const Node& node) const {
     const auto& other = asAssert<Clause>(node);
     return equal_ptr(head, other.head) && equal_targets(bodyLiterals, other.bodyLiterals) &&
-           equal_ptr(plan, other.plan);
+           equal_ptr(plan, other.plan) && stratum == other.stratum;
 }
 
 Clause* Clause::cloning() const {
     auto* cl = new Clause(clone(head), clone(bodyLiterals), clone(plan), getSrcLoc());
+    cl->stratum = stratum;
     return cl;
 }
 
@@ -110,6 +111,7 @@ Clause* Clause::cloneHead() const {
         myClone->setExecutionPlan(clone(getExecutionPlan()));
     }
     myClone->setAnnotationsFrom(*this);
+    myClone->stratum = stratum;
     return myClone;
 }
 

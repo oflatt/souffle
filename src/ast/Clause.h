@@ -79,6 +79,18 @@ public:
         plan = nullptr;
     }
 
+    /** Optional stratum tag (egglog-on-Souffle fork). Clauses sharing a tag
+     * are grouped into the same stratum; clauses with different tags are
+     * kept in separate strata regardless of data dependencies.
+     * Empty string means no tag (default behavior). */
+    const std::string& getStratum() const {
+        return stratum;
+    }
+
+    void setStratum(std::string s) {
+        stratum = std::move(s);
+    }
+
     /** Clones the head/source location/plan of a clause without the body */
     virtual Clause* cloneHead() const;
 
@@ -107,6 +119,9 @@ protected:
 
     /** User defined execution plan (if not defined, plan is null) */
     Own<ExecutionPlan> plan;
+
+    /** Optional stratum tag (egglog-on-Souffle fork). Empty = no tag. */
+    std::string stratum;
 };
 
 }  // namespace souffle::ast
