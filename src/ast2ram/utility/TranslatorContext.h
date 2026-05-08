@@ -96,6 +96,8 @@ public:
     std::string getAttributeTypeQualifier(const ast::QualifiedName& name) const;
     bool hasSizeLimit(const ast::Relation* relation) const;
     std::size_t getSizeLimit(const ast::Relation* relation) const;
+    bool hasIterationLimit(const ast::Relation* relation) const;
+    std::size_t getIterationLimit(const ast::Relation* relation) const;
 
     Own<ram::Aggregator> getLatticeTypeLubAggregator(
             const ast::QualifiedName& typeName, Own<ram::Expression> init) const;

@@ -77,6 +77,9 @@ private:
             if (io->getType() == ast::DirectiveType::limitsize) {
                 continue;
             }
+            if (io->getType() == ast::DirectiveType::limititerations) {
+                continue;
+            }
             Relation* rel = program.getRelation(*io);
             // Prepare type system information.
             std::vector<std::string> attributesParams;
@@ -105,6 +108,9 @@ private:
         Program& program = translationUnit.getProgram();
         for (Directive* io : program.getDirectives()) {
             if (io->getType() == ast::DirectiveType::limitsize) {
+                continue;
+            }
+            if (io->getType() == ast::DirectiveType::limititerations) {
                 continue;
             }
             if (io->hasParameter("attributeNames")) {

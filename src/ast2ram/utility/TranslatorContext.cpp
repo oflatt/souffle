@@ -199,6 +199,15 @@ std::size_t TranslatorContext::getSizeLimit(const ast::Relation* relation) const
     return ioType->getLimitSize(relation);
 }
 
+bool TranslatorContext::hasIterationLimit(const ast::Relation* relation) const {
+    return ioType->isLimitIterations(relation);
+}
+
+std::size_t TranslatorContext::getIterationLimit(const ast::Relation* relation) const {
+    assert(hasIterationLimit(relation) && "relation does not have an iteration limit");
+    return ioType->getLimitIterations(relation);
+}
+
 ast::RelationSet TranslatorContext::getRelationsInSCC(std::size_t scc) const {
     return sccGraph->getInternalRelations(scc);
 }

@@ -144,6 +144,7 @@ WS [ \t\r\v\f]
 ".output"/{WS}                        { return yy::parser::make_OUTPUT_DECL(yylloc); }
 ".printsize"/{WS}                     { return yy::parser::make_PRINTSIZE_DECL(yylloc); }
 ".limitsize"/{WS}                     { return yy::parser::make_LIMITSIZE_DECL(yylloc); }
+".limititerations"/{WS}               { return yy::parser::make_LIMITITERATIONS_DECL(yylloc); }
 ".type"/{WS}                          { return yy::parser::make_TYPE(yylloc); }
 ".comp"/{WS}                          { return yy::parser::make_COMPONENT(yylloc); }
 ".init"/{WS}                          { return yy::parser::make_INSTANTIATE(yylloc); }

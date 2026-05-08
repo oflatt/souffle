@@ -175,6 +175,7 @@
 %token DEBUG_DELTA               "debug_delta"
 %token PRINTSIZE_DECL            "printsize directives declaration"
 %token LIMITSIZE_DECL            "limitsize directives declaration"
+%token LIMITITERATIONS_DECL      "limititerations directives declaration"
 %token OVERRIDE                  "override rules of super-component"
 %token TYPE                      "type declaration"
 %token LATTICE                   "lattice declaration"
@@ -1677,6 +1678,10 @@ directive_head_decl
     {
       $$ = ast::DirectiveType::limitsize;
     }
+  | LIMITITERATIONS_DECL
+    {
+      $$ = ast::DirectiveType::limititerations;
+    }
   ;
 
 /**
@@ -2003,6 +2008,7 @@ token
   | INSTANTIATE               { $$ = makeTokenTree(ast::TokenKind::Ident, ".init"); }
   | LATTICE                   { $$ = makeTokenTree(ast::TokenKind::Ident, ".lattice"); }
   | LIMITSIZE_DECL            { $$ = makeTokenTree(ast::TokenKind::Ident, ".limitsize"); }
+  | LIMITITERATIONS_DECL      { $$ = makeTokenTree(ast::TokenKind::Ident, ".limititerations"); }
   | NUMBER_TYPE               { $$ = makeTokenTree(ast::TokenKind::Ident, ".number_type"); }
   | OUTPUT_DECL               { $$ = makeTokenTree(ast::TokenKind::Ident, ".output"); }
   | OVERRIDE                  { $$ = makeTokenTree(ast::TokenKind::Ident, ".override"); }

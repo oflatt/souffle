@@ -744,6 +744,18 @@ Own<ram::Statement> UnitTranslator::generateStratumExitSequence(const ast::Relat
         }
     }
 
+    // (3) if the iteration limit has been reached for any limititerations
+    // relations in this SCC. The smallest bound across the SCC wins, since
+    // all relations in the SCC share the same fixpoint loop counter.
+    for (const ast::Relation* rel : scc) {
+        if (context->hasIterationLimit(rel)) {
+            Own<ram::Condition> limit = mk<ram::Constraint>(BinaryConstraintOp::GE,
+                    mk<ram::Variable>("loop_counter"),
+                    mk<ram::UnsignedConstant>(context->getIterationLimit(rel)));
+            appendStmt(exitConditions, mk<ram::Exit>(std::move(limit)));
+        }
+    }
+
     return mk<ram::Sequence>(std::move(exitConditions));
 }
 

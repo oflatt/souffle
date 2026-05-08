@@ -48,6 +48,11 @@ void IOTypeAnalysis::run(const TranslationUnit& translationUnit) {
                 assert(directive.hasParameter("n") && "limitsize has no n directive");
                 limitSize[relation] = stoi(directive.getParameter("n"));
                 break;
+            case ast::DirectiveType::limititerations:
+                limitIterationsRelations.insert(relation);
+                assert(directive.hasParameter("n") && "limititerations has no n directive");
+                limitIterations[relation] = stoi(directive.getParameter("n"));
+                break;
         }
     });
 }
@@ -58,6 +63,7 @@ void IOTypeAnalysis::print(std::ostream& os) const {
     os << "output relations: {" << join(outputRelations, ", ", show) << "}\n";
     os << "printsize relations: {" << join(printSizeRelations, ", ", show) << "}\n";
     os << "limitsize relations: {" << join(limitSizeRelations, ", ", show) << "}\n";
+    os << "limititerations relations: {" << join(limitIterationsRelations, ", ", show) << "}\n";
 }
 
 }  // namespace souffle::ast::analysis

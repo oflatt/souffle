@@ -64,6 +64,18 @@ public:
             return 0;
     }
 
+    bool isLimitIterations(const Relation* relation) const {
+        return limitIterationsRelations.count(relation) != 0;
+    }
+
+    std::size_t getLimitIterations(const Relation* relation) const {
+        auto iter = limitIterations.find(relation);
+        if (iter != limitIterations.end()) {
+            return (*iter).second;
+        } else
+            return 0;
+    }
+
     bool isIO(const Relation* relation) const {
         return isInput(relation) || isOutput(relation) || isPrintSize(relation);
     }
@@ -74,6 +86,8 @@ private:
     RelationSet printSizeRelations;
     RelationSet limitSizeRelations;
     std::map<const Relation*, std::size_t> limitSize;
+    RelationSet limitIterationsRelations;
+    std::map<const Relation*, std::size_t> limitIterations;
 };
 
 }  // namespace analysis
