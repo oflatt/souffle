@@ -168,3 +168,35 @@ If MVP works:
 - Per-stratum snapshots (rather than per-program)
 - Better integration with `.limititerations` for `(run N)` semantics
 - Non-recursive SCC snapshot handling
+
+## Status
+
+| Step | Status |
+|---|---|
+| `.limititerations` (per-SCC iteration cap) | ✅ committed, validated |
+| Outer-saturate Loop wrapper (correct, no snaps) | ✅ committed (v0) |
+| Snapshot-based δ across outer iterations | ✅ committed (v1) |
+| Convergence detection (replace iter cap) | ⏳ pending |
+| Named strata + schedule expression DSL | ⏳ pending — required for egglog's multi-stratum pattern |
+
+### Why named strata are required for egglog
+
+Souffle's SCC analysis groups rules by data dependency. In the egglog
+encoded program, user rules and rebuild rules both read/write the
+same view + UF tables, so they all land in one SCC. With everything in
+one SCC, the outer-saturate loop has nothing to do after the first
+iteration — the inner fixpoint already converges.
+
+To express `(seq (run N user) (saturate rebuild))` faithfully we need
+to *force* user rules and rebuild rules into separate strata, then
+schedule them. That's named strata.
+
+### Why v0/v1 are still worth having
+
+They're the foundation:
+- The outer Loop wrapping mechanism exists.
+- Snapshots are wired through createRamRelations + preamble + exit.
+- The pragma plumbing pattern is established.
+
+Named strata reuse all of this; they just add (a) a way to declare them
+and (b) a way to schedule them.
