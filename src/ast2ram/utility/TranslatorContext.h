@@ -99,6 +99,14 @@ public:
     bool hasIterationLimit(const ast::Relation* relation) const;
     std::size_t getIterationLimit(const ast::Relation* relation) const;
 
+    /**
+     * Returns the iteration cap for the outer-saturate fixpoint, if any.
+     * Set via `.pragma "outer-saturate" "<N>"` at program level. When set,
+     * the entire SCC sequence is wrapped in a Loop bounded by N iterations.
+     * Returns 0 if the pragma is absent.
+     */
+    std::size_t getOuterSaturateLimit() const;
+
     Own<ram::Aggregator> getLatticeTypeLubAggregator(
             const ast::QualifiedName& typeName, Own<ram::Expression> init) const;
     Own<ram::AbstractOperator> getLatticeTypeLubFunctor(

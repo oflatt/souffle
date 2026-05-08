@@ -20,6 +20,7 @@
 #include "ast/Directive.h"
 #include "ast/Functor.h"
 #include "ast/IntrinsicFunctor.h"
+#include "ast/Pragma.h"
 #include "ast/QualifiedName.h"
 #include "ast/SubsumptiveClause.h"
 #include "ast/TranslationUnit.h"
@@ -206,6 +207,20 @@ bool TranslatorContext::hasIterationLimit(const ast::Relation* relation) const {
 std::size_t TranslatorContext::getIterationLimit(const ast::Relation* relation) const {
     assert(hasIterationLimit(relation) && "relation does not have an iteration limit");
     return ioType->getLimitIterations(relation);
+}
+
+std::size_t TranslatorContext::getOuterSaturateLimit() const {
+    for (const auto& pragma : program->getPragmaDirectives()) {
+        auto [k, v] = pragma->getkvp();
+        if (k == "outer-saturate") {
+            try {
+                return std::stoul(v);
+            } catch (...) {
+                return 0;
+            }
+        }
+    }
+    return 0;
 }
 
 ast::RelationSet TranslatorContext::getRelationsInSCC(std::size_t scc) const {

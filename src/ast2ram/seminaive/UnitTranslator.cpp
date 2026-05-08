@@ -945,6 +945,34 @@ Own<ram::Sequence> UnitTranslator::generateProgram(const ast::TranslationUnit& t
         appendStmt(res, mk<ram::Call>("stratum_" + stratumID));
     }
 
+    // If `.pragma "outer-saturate" "N"` is set, wrap the SCC sequence in
+    // an outer Loop bounded by N iterations. This is the v0 of schedule
+    // expressions for the egglog-on-Souffle fork; v1 will add per-stratum
+    // snapshots so the inner loops keep semi-naive deltas across visits.
+    if (std::size_t outerCap = context->getOuterSaturateLimit(); outerCap > 0) {
+        const std::string outerCounter = "outer_loop_counter";
+        VecOwn<ram::Statement> body;
+        // Move the existing SCC-call sequence into the loop body.
+        for (auto& stmt : res) {
+            appendStmt(body, std::move(stmt));
+        }
+        res.clear();
+        // Increment outer counter each iteration.
+        VecOwn<ram::Expression> inc;
+        inc.push_back(mk<ram::Variable>(outerCounter));
+        inc.push_back(mk<ram::UnsignedConstant>(1));
+        appendStmt(body, mk<ram::Assign>(mk<ram::Variable>(outerCounter),
+                              mk<ram::IntrinsicOperator>(FunctorOp::UADD, std::move(inc)), false));
+        // Exit when the cap is reached.
+        appendStmt(body,
+                mk<ram::Exit>(mk<ram::Constraint>(BinaryConstraintOp::GE,
+                        mk<ram::Variable>(outerCounter), mk<ram::UnsignedConstant>(outerCap))));
+        // Initialize counter and emit the loop.
+        appendStmt(res, mk<ram::Assign>(mk<ram::Variable>(outerCounter),
+                                mk<ram::UnsignedConstant>(0), true));
+        appendStmt(res, mk<ram::Loop>(mk<ram::Sequence>(std::move(body))));
+    }
+
     // Add main timer if profiling
     if (!res.empty() && glb->config().has("profile")) {
         auto newStmt = mk<ram::LogTimer>(mk<ram::Sequence>(std::move(res)), LogStatement::runtime());
