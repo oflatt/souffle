@@ -176,6 +176,7 @@
 %token PRINTSIZE_DECL            "printsize directives declaration"
 %token LIMITSIZE_DECL            "limitsize directives declaration"
 %token LIMITITERATIONS_DECL      "limititerations directives declaration"
+%token SNAPSHOT_DECL             "snapshot directives declaration"
 %token OVERRIDE                  "override rules of super-component"
 %token TYPE                      "type declaration"
 %token LATTICE                   "lattice declaration"
@@ -1682,6 +1683,10 @@ directive_head_decl
     {
       $$ = ast::DirectiveType::limititerations;
     }
+  | SNAPSHOT_DECL
+    {
+      $$ = ast::DirectiveType::snapshot;
+    }
   ;
 
 /**
@@ -2009,6 +2014,7 @@ token
   | LATTICE                   { $$ = makeTokenTree(ast::TokenKind::Ident, ".lattice"); }
   | LIMITSIZE_DECL            { $$ = makeTokenTree(ast::TokenKind::Ident, ".limitsize"); }
   | LIMITITERATIONS_DECL      { $$ = makeTokenTree(ast::TokenKind::Ident, ".limititerations"); }
+  | SNAPSHOT_DECL             { $$ = makeTokenTree(ast::TokenKind::Ident, ".snapshot"); }
   | NUMBER_TYPE               { $$ = makeTokenTree(ast::TokenKind::Ident, ".number_type"); }
   | OUTPUT_DECL               { $$ = makeTokenTree(ast::TokenKind::Ident, ".output"); }
   | OVERRIDE                  { $$ = makeTokenTree(ast::TokenKind::Ident, ".override"); }

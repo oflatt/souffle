@@ -76,6 +76,24 @@ public:
             return 0;
     }
 
+    /**
+     * The relation is declared as a snapshot of another relation. Returns
+     * empty string if not a snapshot. The source relation is refreshed into
+     * this one at outer-loop iteration boundaries.
+     */
+    std::string getSnapshotSource(const Relation* relation) const {
+        auto iter = snapshotSource.find(relation);
+        if (iter != snapshotSource.end()) {
+            return iter->second;
+        }
+        return {};
+    }
+
+    /** Iterate over (snap_relation, source_relation_name) pairs. */
+    const std::map<const Relation*, std::string>& getAllSnapshots() const {
+        return snapshotSource;
+    }
+
     bool isIO(const Relation* relation) const {
         return isInput(relation) || isOutput(relation) || isPrintSize(relation);
     }
@@ -88,6 +106,8 @@ private:
     std::map<const Relation*, std::size_t> limitSize;
     RelationSet limitIterationsRelations;
     std::map<const Relation*, std::size_t> limitIterations;
+    /// snap relation -> source relation qualified name string
+    std::map<const Relation*, std::string> snapshotSource;
 };
 
 }  // namespace analysis

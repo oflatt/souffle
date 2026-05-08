@@ -223,6 +223,18 @@ std::size_t TranslatorContext::getOuterSaturateLimit() const {
     return 0;
 }
 
+std::vector<std::pair<const ast::Relation*, const ast::Relation*>>
+TranslatorContext::getSnapshotPairs() const {
+    std::vector<std::pair<const ast::Relation*, const ast::Relation*>> pairs;
+    for (const auto& [snap, sourceName] : ioType->getAllSnapshots()) {
+        const ast::Relation* source = program->getRelation(ast::QualifiedName::fromString(sourceName));
+        if (source != nullptr) {
+            pairs.emplace_back(snap, source);
+        }
+    }
+    return pairs;
+}
+
 ast::RelationSet TranslatorContext::getRelationsInSCC(std::size_t scc) const {
     return sccGraph->getInternalRelations(scc);
 }

@@ -43,12 +43,25 @@ bool RemoveEmptyRelationsTransformer::removeEmptyRelations(TranslationUnit& tran
         return true;
     });
 
+    // Collect names of relations that are sources of `.snapshot` directives
+    // — they're "used" by the runtime even if no rule reads them via a body
+    // atom, so they must not be eliminated.
+    UnorderedQualifiedNameSet snapshotSourceNames;
+    for (const auto& [snap, sourceName] : ioTypes.getAllSnapshots()) {
+        snapshotSourceNames.insert(QualifiedName::fromString(sourceName));
+    }
+
     UnorderedQualifiedNameSet emptyRelations;
     bool changed = false;
     for (auto rel : program.getRelations()) {
         if (ioTypes.isInput(rel)) continue;
         if (!program.getClauses(*rel).empty()) continue;
         if (rel->getIsDeltaDebug()) continue;
+        // Snapshot relations are populated externally by the runtime at
+        // outer-loop iteration boundaries; they have no clauses but they
+        // are not empty in practice.
+        if (!ioTypes.getSnapshotSource(rel).empty()) continue;
+        if (snapshotSourceNames.count(rel->getQualifiedName()) > 0) continue;
 
         emptyRelations.insert(rel->getQualifiedName());
 

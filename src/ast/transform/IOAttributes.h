@@ -80,6 +80,9 @@ private:
             if (io->getType() == ast::DirectiveType::limititerations) {
                 continue;
             }
+            if (io->getType() == ast::DirectiveType::snapshot) {
+                continue;
+            }
             Relation* rel = program.getRelation(*io);
             // Prepare type system information.
             std::vector<std::string> attributesParams;
@@ -111,6 +114,9 @@ private:
                 continue;
             }
             if (io->getType() == ast::DirectiveType::limititerations) {
+                continue;
+            }
+            if (io->getType() == ast::DirectiveType::snapshot) {
                 continue;
             }
             if (io->hasParameter("attributeNames")) {

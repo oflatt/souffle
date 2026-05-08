@@ -107,6 +107,14 @@ public:
      */
     std::size_t getOuterSaturateLimit() const;
 
+    /**
+     * For each `.snapshot R_snap(of="R")` directive, return (R_snap, R)
+     * pairs of ast::Relation pointers. Both relations must be declared.
+     * The snapshot relation is refreshed from its source at outer-loop
+     * iteration boundaries.
+     */
+    std::vector<std::pair<const ast::Relation*, const ast::Relation*>> getSnapshotPairs() const;
+
     Own<ram::Aggregator> getLatticeTypeLubAggregator(
             const ast::QualifiedName& typeName, Own<ram::Expression> init) const;
     Own<ram::AbstractOperator> getLatticeTypeLubFunctor(

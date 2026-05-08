@@ -25,7 +25,7 @@
 
 namespace souffle::ast {
 
-enum class DirectiveType { input, output, printsize, limitsize, limititerations };
+enum class DirectiveType { input, output, printsize, limitsize, limititerations, snapshot };
 
 // FIXME: I'm going crazy defining these. There has to be a library that does this boilerplate for us.
 std::ostream& operator<<(std::ostream& os, DirectiveType e);

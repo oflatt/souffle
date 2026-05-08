@@ -21,6 +21,7 @@ std::ostream& operator<<(std::ostream& os, DirectiveType e) {
         case DirectiveType::printsize: return os << "printsize";
         case DirectiveType::limitsize: return os << "limitsize";
         case DirectiveType::limititerations: return os << "limititerations";
+        case DirectiveType::snapshot: return os << "snapshot";
     }
 
     UNREACHABLE_BAD_CASE_ANALYSIS

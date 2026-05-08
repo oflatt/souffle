@@ -74,6 +74,7 @@ private:
             // is not an I/O directive
             if (io->getType() == ast::DirectiveType::limitsize) continue;
             if (io->getType() == ast::DirectiveType::limititerations) continue;
+            if (io->getType() == ast::DirectiveType::snapshot) continue;
 
             // Set a default IO of file
             if (!io->hasParameter("IO")) {

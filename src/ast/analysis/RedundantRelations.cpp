@@ -46,6 +46,18 @@ void RedundantRelationsAnalysis::run(const TranslationUnit& translationUnit) {
         }
     }
 
+    /* For .snapshot directives, the source relation is a runtime-only
+       predecessor of the snap (refreshed at outer-loop boundaries). The
+       precedence graph doesn't carry that edge — patch it in here so
+       sources of needed snaps don't get pruned as redundant. */
+    std::map<const Relation*, const Relation*> snapSourceOf;
+    for (const auto& [snap, sourceName] : ioType.getAllSnapshots()) {
+        const Relation* source = program.getRelation(QualifiedName::fromString(sourceName));
+        if (source != nullptr) {
+            snapSourceOf[snap] = source;
+        }
+    }
+
     /* Find all relations which are not redundant for the computations of the
        output relations. */
     while (!work.empty()) {
@@ -59,6 +71,15 @@ void RedundantRelationsAnalysis::run(const TranslationUnit& translationUnit) {
         for (const Relation* predecessor : precedenceGraph->graph().predecessors(u)) {
             if (notRedundant.count(predecessor) == 0u) {
                 work.insert(predecessor);
+            }
+        }
+
+        /* If u is a snapshot relation, its source is a runtime-only
+           predecessor — keep it alive too. */
+        if (auto it = snapSourceOf.find(u); it != snapSourceOf.end()) {
+            const Relation* source = it->second;
+            if (notRedundant.count(source) == 0u) {
+                work.insert(source);
             }
         }
     }

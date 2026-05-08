@@ -242,6 +242,19 @@ void ParserDriver::addDirective(Own<ast::Directive> directive) {
                 return;
             }
         }
+    } else if (directive->getType() == ast::DirectiveType::snapshot) {
+        for (const auto& cur : program.getDirectives()) {
+            if (cur->getQualifiedName() == directive->getQualifiedName() &&
+                    cur->getType() == ast::DirectiveType::snapshot) {
+                Diagnostic err(Diagnostic::Type::ERROR,
+                        DiagnosticMessage("Redefinition of snapshot directives for relation " +
+                                                  toString(directive->getQualifiedName()),
+                                directive->getSrcLoc()),
+                        {DiagnosticMessage("Previous definition", cur->getSrcLoc())});
+                translationUnit->getErrorReport().addDiagnostic(err);
+                return;
+            }
+        }
     }
     program.addDirective(std::move(directive));
 }

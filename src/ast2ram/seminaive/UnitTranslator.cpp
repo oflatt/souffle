@@ -980,17 +980,30 @@ Own<ram::Sequence> UnitTranslator::generateProgram(const ast::TranslationUnit& t
     }
 
     // If `.pragma "outer-saturate" "N"` is set, wrap the SCC sequence in
-    // an outer Loop bounded by N iterations. This is the v0 of schedule
-    // expressions for the egglog-on-Souffle fork; v1 will add per-stratum
-    // snapshots so the inner loops keep semi-naive deltas across visits.
+    // an outer Loop bounded by N iterations. At the start of each iteration,
+    // refresh any user-declared snapshot relations from their sources — this
+    // is what gives rules a way to see "the state at the start of this
+    // iteration" without joining live relations and creating cycles.
     if (std::size_t outerCap = context->getOuterSaturateLimit(); outerCap > 0) {
         const std::string outerCounter = "outer_loop_counter";
         VecOwn<ram::Statement> body;
+
+        // Refresh user-declared snapshots: snap := source. Done at the START
+        // of each iteration so rules reading the snap see the post-previous-
+        // iteration state of the source.
+        for (const auto& [snap, source] : context->getSnapshotPairs()) {
+            std::string snapName = getConcreteRelationName(snap->getQualifiedName());
+            std::string sourceName = getConcreteRelationName(source->getQualifiedName());
+            appendStmt(body, mk<ram::Clear>(snapName));
+            appendStmt(body, generateMergeRelations(snap, snapName, sourceName));
+        }
+
         // Move the existing SCC-call sequence into the loop body.
         for (auto& stmt : res) {
             appendStmt(body, std::move(stmt));
         }
         res.clear();
+
         // Increment outer counter each iteration.
         VecOwn<ram::Expression> inc;
         inc.push_back(mk<ram::Variable>(outerCounter));

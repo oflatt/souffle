@@ -53,6 +53,10 @@ void IOTypeAnalysis::run(const TranslationUnit& translationUnit) {
                 assert(directive.hasParameter("n") && "limititerations has no n directive");
                 limitIterations[relation] = stoi(directive.getParameter("n"));
                 break;
+            case ast::DirectiveType::snapshot:
+                assert(directive.hasParameter("of") && "snapshot has no 'of' directive");
+                snapshotSource[relation] = directive.getParameter("of");
+                break;
         }
     });
 }
